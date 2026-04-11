@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wealth and Primary Education Gap</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f8f9fa;
+      color: #333;
+    }
+
+    header {
+      background: #fff;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 16px 24px;
+    }
+
+    header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    header p {
+      font-size: 13px;
+      color: #666;
+      margin-top: 2px;
+    }
+
+    #controls {
+      background: #fff;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #555;
+    }
+
+    #year-slider {
+      width: 200px;
+      accent-color: #08519C;
+    }
+
+    #year-label {
+      font-weight: 600;
+      color: #08519C;
+      min-width: 36px;
+    }
+
+    #play-btn {
+      background: #08519C;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 5px 14px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    #play-btn:hover { background: #0c447c; }
+
+    #continent-filter {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 13px;
+      color: #333;
+      cursor: pointer;
+    }
+
+    #maps-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      padding: 16px 24px;
+    }
+
+    .map-panel {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .map-panel h2 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .map-panel svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .country {
+      stroke: #fff;
+      stroke-width: 0.4;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .country:hover { opacity: 0.75; stroke-width: 1; stroke: #333; }
+    .country.faded { opacity: 0.15; }
+
+    #legend {
+      background: #fff;
+      border-top: 1px solid #e0e0e0;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+
+    .legend-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #555;
+      margin-right: 4px;
+    }
+
+    .legend-buckets {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .legend-bucket {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: #555;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 3px;
+      border: 1.5px solid transparent;
+      transition: border-color 0.15s;
+    }
+
+    .legend-bucket:hover { border-color: #aaa; }
+    .legend-bucket.active { border-color: #333; }
+
+    .legend-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    #tooltip {
+      position: fixed;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 12px;
+      pointer-events: none;
+      display: none;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      max-width: 280px;
+      min-width: 260px;
+    }
+
+    #tooltip .tt-country {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #1a1a1a;
+    }
+
+    #tooltip .tt-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 3px 0;
+      color: #444;
+    }
+
+    #tooltip .tt-label { color: #888; }
+    #tooltip .tt-val   { font-weight: 500; }
+    #tooltip .tt-gap   { color: #D55E00; font-weight: 600; }
+
+    #tooltip .tt-spark {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    #tooltip .tt-spark-label {
+      font-size: 10px;
+      color: #aaa;
+      margin-bottom: 4px;
+    }
+
+    #stats {
+      background: #fff;
+      border-top: 1px solid #e0e0e0;
+      padding: 10px 24px;
+      display: flex;
+      gap: 32px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    #stats span b { color: #08519C; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Primary Enrollment vs Completion Rate — Wealth and Education Gap</h1>
+  
+</header>
+
+<div id="controls">
+  <div class="control-group">
+    <label for="year-slider">Year:</label>
+    <input type="range" id="year-slider" min="1999" max="2023" step="1" value="1999">
+    <span id="year-label">1999</span>
+  </div>
+  <div class="control-group">
+    <button id="play-btn">&#9654; Play</button>
+  </div>
+  <div class="control-group">
+    <label for="continent-filter">Continent:</label>
+    <select id="continent-filter">
+      <option value="all">All Continents</option>
+      <option value="Africa">Africa</option>
+      <option value="America">Americas</option>
+      <option value="Asia/Pacific">Asia / Pacific</option>
+      <option value="Europe">Europe</option>
+    </select>
+  </div>
+</div>
+
+<div id="maps-container">
+  <div class="map-panel" id="panel-enrollment">
+    <h2>Enrollment Rate (%)</h2>
+    <svg id="svg-enrollment" viewBox="0 0 800 420"></svg>
+  </div>
+  <div class="map-panel" id="panel-completion">
+    <h2>Completion Rate (%)</h2>
+    <svg id="svg-completion" viewBox="0 0 800 420"></svg>
+  </div>
+</div>
+
+<div id="legend">
+  <div style="display:flex;align-items:center;gap:8px">
+    <span class="legend-title">Rate (%):</span>
+    <div class="legend-buckets" id="legend-buckets"></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#888">
+    <svg width="16" height="16"><rect x="1" y="1" width="14" height="14"
+      fill="#BDBDBD" stroke="#aaa" stroke-width="0.5"
+      stroke-dasharray="3,2"/></svg>
+    No data
+  </div>
+</div>
+
+<div id="stats">
+  <span>Countries shown: <b id="stat-countries">—</b></span>
+  <span>Avg enrollment: <b id="stat-enrol">—</b></span>
+  <span>Avg completion: <b id="stat-comp">—</b></span>
+  <span>Avg gap: <b id="stat-gap">—</b></span>
+</div>
+
+<div id="tooltip"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
