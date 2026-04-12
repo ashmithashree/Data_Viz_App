@@ -114,10 +114,22 @@
       stroke: #fff;
       stroke-width: 0.4;
       cursor: pointer;
-      transition: opacity 0.2s;
+      transition: opacity 0.2s, stroke-width 0.15s;
     }
 
-    .country:hover { opacity: 0.75; stroke-width: 1; stroke: #333; }
+    /* Hover — slight dim */
+    .country:hover { opacity: 0.8; stroke: #555; stroke-width: 1; }
+
+    /* Click selected — bold dark outline on BOTH maps */
+    .country.country-selected {
+      stroke: #1a1a1a !important;
+      stroke-width: 2.5 !important;
+      opacity: 1 !important;
+    }
+
+    /* All non-selected countries fade out */
+    .country.country-faded { opacity: 0.12 !important; }
+
     .country.faded { opacity: 0.15; }
 
     #legend {
@@ -229,7 +241,6 @@
 
 <header>
   <h1>Primary Enrollment vs Completion Rate — Wealth and Education Gap</h1>
-  
 </header>
 
 <div id="controls">

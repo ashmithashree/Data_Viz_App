@@ -50,7 +50,7 @@ let playing        = false;
 let playTimer      = null;
 let activeContinent = 'all';
 let activeBucket   = null;
-
+let selectedCountryId = null; 
 // Pre-built lookup: year → { alpha3 → record }
 const dataIndex = {};
 
@@ -120,8 +120,23 @@ function drawMaps() {
         .on('mouseout', function() {
           hideTooltip();
           d3.selectAll('.country').classed('highlighted', false);
+        })
+        // CLICK — locks focus on this country across BOTH maps
+        // Click same country again to deselect and reset
+        .on('click', function(event, d) {
+          const alreadySelected = (selectedCountryId === d.id);
+          if (alreadySelected) {
+            selectedCountryId = null;
+            d3.selectAll('.country')
+              .classed('country-selected', false)
+              .classed('country-faded', false);
+          } else {
+            selectedCountryId = d.id;
+            d3.selectAll('.country')
+              .classed('country-selected', cd => cd.id === d.id)
+              .classed('country-faded',    cd => cd.id !== d.id);
+          }
         });
-
     updateMapColors(svgId, field);
   });
 }
