@@ -64,7 +64,41 @@
   <span>Avg completion: <b id="stat-comp">—</b></span>
   <span>Avg gap: <b id="stat-gap">—</b></span>
 </div>
-
+<div id="data-info">
+  <strong>Data Processing &amp; Sources</strong>
+  <button id="info-toggle" onclick="
+    const b = document.getElementById('info-body');
+    b.classList.toggle('open');
+    this.textContent = b.classList.contains('open') ? 'hide' : 'show details';
+  ">show details</button>
+ 
+  <div id="info-body">
+    <p style="margin-top:6px">
+      <strong>Data sources:</strong>
+      (1) <a href="https://www.kaggle.com/datasets/bushraqurban/world-education-dataset/data " target="_blank">
+      World Bank EdStats</a> — Primary enrollment and completion rates, 200+ countries, 1999–2023.
+      (2) <a href="https://globaldatalab.org/wealth/table/iwi/" target="_blank">
+      Global Data Lab — International Wealth Index (IWI)</a> — Household wealth scores (0–100), 133 countries, 1992–2023.
+    </p>
+    <p style="margin-top:5px">
+      <strong>Processing steps applied:</strong>
+      (1) Continent labels were mapped from the GDL dataset to education records before merging, ensuring all countries retain their region regardless of IWI data availability.
+      (2) 56 World Bank regional aggregate codes (e.g. SSA, WLD, HIC) were excluded as they represent country-group averages not mappable to geographic boundaries.
+      (3) GDL sub-national rows were deduplicated to national level only, preventing duplicate country-year records.
+      (4) A left join on ISO country code and year preserved all education records even where no IWI match exists.
+      (5) Missing enrollment, completion, and IWI values were forward-filled within each country's time series following standard practice for temporal data gaps.
+      (6) Gross enrollment ratios exceeding 100% were capped at 100% to correct for over-age student counting in UNESCO methodology.
+      (7) The attrition gap was computed as Enrollment − Completion, directly operationalising the research question.
+      (8) Rows with negative gaps (measurement artefacts) and null enrollment were removed.
+    </p>
+    </p>
+    <p style="margin-top:5px">
+      All displayed values trace directly to the original source datasets — no values were fabricated or imputed.
+      Detailed processing documentation available on the
+      <a href="https://miro.com/app/board/uXjVGneaDOU=/?moveToWidget=3458764667454228807" target="_blank">Miro board, Implementation frame</a>.
+    </p>
+  </div>
+</div>
 <div id="tooltip"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>

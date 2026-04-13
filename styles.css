@@ -248,3 +248,36 @@
     }
  
     #stats span b { color: #08519C; }
+
+    #data-info {
+      background: #fff;
+      border-top: 1px solid #e0e0e0;
+      padding: 10px 20px;
+      font-size: 11px;
+      color: #555;
+      flex-shrink: 0;
+      line-height: 1.6;
+    }
+ 
+    #data-info strong { color: #1a1a1a; font-weight: 600; }
+ 
+    #data-info a {
+      color: #08519C;
+      text-decoration: none;
+    }
+ 
+    #data-info a:hover { text-decoration: underline; }
+ 
+    #info-toggle {
+      background: none;
+      border: none;
+      color: #08519C;
+      font-size: 11px;
+      cursor: pointer;
+      padding: 0;
+      margin-left: 8px;
+      text-decoration: underline;
+    }
+ 
+    #info-body { display: none; margin-top: 6px; }
+    #info-body.open { display: block; }

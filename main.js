@@ -1,4 +1,4 @@
-// ── CONFIG ────────────────────────────────────────────────────────────────────
+// ── set colour────────────────────────────────────────────────────────────────────
 const BUCKETS = [
   { label: '>95%',   min: 95,  max: 200, color: '#08519C' },
   { label: '90–95%', min: 90,  max: 95,  color: '#3182BD' },
@@ -8,7 +8,7 @@ const BUCKETS = [
   { label: '<60%',   min: 0,   max: 60,  color: '#D55E00' },
 ];
 
-// Alpha-3 → ISO numeric (TopoJSON uses numeric IDs)
+// Alpha-3 → ISO numeric
 const A3_TO_NUM = {
   AFG:4,ALB:8,DZA:12,AGO:24,ARG:32,ARM:51,AUS:36,AZE:31,BGD:50,
   BLR:112,BEN:204,BTN:64,BOL:68,BIH:70,BWA:72,BRA:76,BFA:854,BDI:108,
@@ -34,7 +34,6 @@ const A3_TO_NUM = {
   MHL:584,FSM:583,PLW:585,NRU:520,TUV:798,COK:184,NIU:570,
 };
 
-// Build reverse: numeric string → alpha3
 const NUM_TO_A3 = {};
 Object.entries(A3_TO_NUM).forEach(([a3, num]) => {
   NUM_TO_A3[String(num)] = a3;
@@ -42,7 +41,7 @@ Object.entries(A3_TO_NUM).forEach(([a3, num]) => {
 
 const W = 800, H = 400;
 
-// ── STATE ─────────────────────────────────────────────────────────────────────
+// ── initilise─────────────────────────────────────────────────────────────────────
 let allData        = [];
 let worldTopo      = null;
 let currentYear    = 1999;
@@ -52,7 +51,7 @@ let activeContinent = 'all';
 let selectedCountryId = null;
 let activeBucket   = null;
 
-// Pre-built lookup: year → { alpha3 → record }
+// Pre-built lookup: year
 const dataIndex = {};
 
 function buildIndex(data) {
@@ -66,7 +65,7 @@ function getRecord(alpha3, year) {
   return (dataIndex[year] || {})[alpha3] || null;
 }
 
-// ── COLOUR ────────────────────────────────────────────────────────────────────
+// ── colour────────────────────────────────────────────────────────────────────
 function colorFor(val) {
   if (val == null || isNaN(val)) return null;
   const b = BUCKETS.find(b => val >= b.min && val < b.max);
@@ -78,7 +77,7 @@ function bucketFor(val) {
   return BUCKETS.find(b => val >= b.min && val < b.max) || null;
 }
 
-// ── DRAW BOTH MAPS ────────────────────────────────────────────────────────────
+// ── map map ────────────────────────────────────────────────────────────
 function drawMaps() {
   const features = topojson.feature(worldTopo, worldTopo.objects.countries).features;
 
@@ -120,8 +119,7 @@ function drawMaps() {
           hideTooltip();
         })
 
-        // CLICK — locks focus on this country across BOTH maps
-        // Click same country again to deselect and reset
+        // click to focus on the country
         .on('click', function(event, d) {
           const alreadySelected = (selectedCountryId === d.id);
           if (alreadySelected) {
@@ -180,7 +178,7 @@ function updateBothColors() {
   updateMapColors('svg-completion', 'completion');
 }
 
-// ── UPDATE YEAR ───────────────────────────────────────────────────────────────
+// ── update year ───────────────────────────────────────────────────────────────
 function update(year) {
   currentYear = +year;
   document.getElementById('year-label').textContent = currentYear;
@@ -189,7 +187,7 @@ function update(year) {
   updateStats();
 }
 
-// ── STATS ─────────────────────────────────────────────────────────────────────
+// ── statics─────────────────────────────────────────────────────────────────────
 function updateStats() {
   const yearRecs = Object.values(dataIndex[currentYear] || {});
   const visible  = activeContinent === 'all'
@@ -206,7 +204,7 @@ function updateStats() {
     valid.length ? d3.mean(valid, r => r.gap).toFixed(1) + ' pts' : '—';
 }
 
-// ── TOOLTIP ───────────────────────────────────────────────────────────────────
+// ── tooltip ───────────────────────────────────────────────────────────────────
 const tooltip = document.getElementById('tooltip');
 
 function showTooltip(event, a3, rec) {
@@ -247,23 +245,23 @@ function showTooltip(event, a3, rec) {
 }
 
 function moveTooltip(event) {
-  const TT_W  = 274;  // tooltip width + padding
-  const TT_H  = 300;  // tooltip approximate height
-  const GAP   = 14;   // gap between cursor and tooltip
+  const TT_W  = 274;  
+  const TT_H  = 300; 
+  const GAP   = 14;  
   const mx    = event.clientX;
   const my    = event.clientY;
   const vw    = window.innerWidth;
   const vh    = window.innerHeight;
 
-  // Flip left if tooltip would overflow right edge
+  // Flip left 
   const left = (mx + GAP + TT_W > vw)
-    ? mx - TT_W - GAP          // show to the LEFT of cursor
-    : mx + GAP;                 // show to the RIGHT of cursor
+    ? mx - TT_W - GAP         
+    : mx + GAP;                 
 
-  // Flip up if tooltip would overflow bottom edge
+  // Flip up 
   const top = (my + GAP + TT_H > vh)
-    ? my - TT_H                 // show ABOVE cursor
-    : my + GAP;                 // show BELOW cursor
+    ? my - TT_H                 
+    : my + GAP;                
 
   tooltip.style.left = Math.max(4, left) + 'px';
   tooltip.style.top  = Math.max(4, top)  + 'px';
@@ -279,7 +277,6 @@ function buildSparkline(a3) {
     .sort((a, b) => a.year - b.year);
   if (sparkData.length < 2) return '';
 
-  // Chart dimensions with margins for axes
   const ml = 32, mr = 12, mt = 8, mb = 24;
   const sw = 220, sh = 90;
   const iw = sw - ml - mr;
@@ -312,7 +309,7 @@ function buildSparkline(a3) {
   // Y axis ticks
   const yTicks = [0, Math.round(maxGap / 2), maxGap];
 
-  // X axis ticks — first, middle, last year
+  // X axis ticks 
   const midYear = Math.round((minYear + maxYear) / 2);
   const xTicks  = [minYear, midYear, maxYear];
 
@@ -378,7 +375,7 @@ function buildSparkline(a3) {
   </svg>`;
 }
 
-// ── LEGEND ────────────────────────────────────────────────────────────────────
+// ── filter ────────────────────────────────────────────────────────────────────
 function buildLegend() {
   const container = document.getElementById('legend-buckets');
   container.innerHTML = '';
@@ -401,7 +398,7 @@ function buildLegend() {
   });
 }
 
-// ── PLAY / PAUSE ──────────────────────────────────────────────────────────────
+// ── play button ──────────────────────────────────────────────────────────────
 function startPlay() {
   playing = true;
   document.getElementById('play-btn').textContent = '⏸ Pause';
@@ -417,7 +414,7 @@ function stopPlay() {
   document.getElementById('play-btn').innerHTML = '&#9654; Play';
 }
 
-// ── INIT ──────────────────────────────────────────────────────────────────────
+// ── init ──────────────────────────────────────────────────────────────────────
 Promise.all([
   d3.json('data/data.json'),
   d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')

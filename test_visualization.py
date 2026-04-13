@@ -27,9 +27,8 @@ RESULTS = []
 
 def log(name, passed, detail=""):
     status = "PASS" if passed else "FAIL"
-    icon   = "✅" if passed else "❌"
     RESULTS.append((name, passed, detail))
-    msg = f"{icon} {status} | {name}"
+    msg = f"{status} | {name}"
     if detail:
         msg += f" — {detail}"
     print(msg)
@@ -430,7 +429,7 @@ def run_all_tests():
     if failed_all:
         print("\nFailed tests:")
         for name, _, detail in failed_all:
-            print(f"  ❌ {name}" + (f" — {detail}" if detail else ""))
+            print(f"  {name}" + (f" — {detail}" if detail else ""))
     score = round(len(passed_all) / len(RESULTS) * 100)
     print(f"\nOverall: {score}%")
     return len(failed_all) == 0
