@@ -1,0 +1,73 @@
+import pandas as pd
+import json
+import math
+
+# ── LOAD ──────────────────────────────────────────────────────────────────────
+edu    = pd.read_csv('world-education-data.csv')
+wealth = pd.read_csv('GDL-Mean-International-Wealth-Index-(IWI).csv')
+
+
+continent_lookup = (
+    wealth.drop_duplicates(subset=['ISO_Code'])
+          .set_index('ISO_Code')['Continent']
+          .to_dict()
+)
+print(f"Continent lookup: {len(continent_lookup)} countries from wealth CSV")
+
+exclude = {
+    'AFE','AFW','ARB','CEB','CSS','EAP','EAR','EAS','ECA','ECS',
+    'EMU','EUU','FCS','HIC','IBD','IBT','IDA','IDB','IDX','LAC',
+    'LCN','LDC','LIC','LMC','LMY','LTE','MEA','MIC','MNA','NAC',
+    'OED','OSS','PRE','PSS','PST','SAS','SSA','SSF','SST','TEA',
+    'TEC','TLA','TMN','TSA','TSS','UMC','WLD'
+}
+
+edu = edu[~edu['country_code'].isin(exclude)].copy()
+print(f"Education after removing aggregates: {edu['country_code'].nunique()} countries")
+
+edu['continent'] = edu['country_code'].map(continent_lookup)
+
+no_continent = edu[edu['continent'].isna()]['country_code'].unique()
+print(f"Countries with no continent ({len(no_continent)}): {sorted(no_continent)}")
+
+wealth_nat = wealth.drop_duplicates(subset=['ISO_Code', 'Year'])
+
+merged = edu.merge(
+    wealth_nat[['ISO_Code', 'Year', 'Wealth_Index']],
+    left_on  = ['country_code', 'year'],
+    right_on = ['ISO_Code', 'Year'],
+    how      = 'left'
+)
+
+
+merged = merged.rename(columns={
+    'country_code'            : 'id',
+    'country'                 : 'country',
+    'school_enrol_primary_pct': 'enrollment',
+    'pri_comp_rate_pct'       : 'completion',
+    'Wealth_Index'            : 'iwi'
+})
+merged = merged[['id','country','continent','year',
+                 'enrollment','completion','iwi']].copy()
+
+merged = merged.sort_values(['id','year'])
+for col in ['enrollment','completion','iwi']:
+    merged[col] = merged.groupby('id')[col].transform(lambda x: x.ffill())
+
+merged['enrollment'] = merged['enrollment'].clip(upper=100).round(1)
+merged['completion'] = pd.to_numeric(merged['completion'], errors='coerce').round(1)
+merged['iwi']        = pd.to_numeric(merged['iwi'], errors='coerce').round(1)
+merged['gap']        = (merged['enrollment'] - merged['completion']).round(1)
+
+merged = merged.dropna(subset=['enrollment'])
+merged = merged[merged['gap'].isna() | (merged['gap'] >= 0)]
+merged = merged.drop_duplicates(subset=['id','year'])
+
+records = merged.to_dict(orient='records')
+cleaned = [{k:(None if isinstance(v,float) and math.isnan(v) else v)
+            for k,v in r.items()} for r in records]
+
+with open('data.json','w') as f:
+    json.dump(cleaned, f, separators=(',',':'))
+
+print(f"\nSaved: data.json ({len(cleaned):,} records)")
