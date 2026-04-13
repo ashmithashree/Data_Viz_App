@@ -1,39 +1,51 @@
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+ 
     body {
       font-family: 'Segoe UI', Arial, sans-serif;
       background: #f8f9fa;
       color: #333;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
     }
-
+ 
     header {
       background: #fff;
       border-bottom: 1px solid #e0e0e0;
-      padding: 16px 24px;
+      padding: 8px 20px;
+      flex-shrink: 0;
+      text-align: center;
     }
-
+ 
     header h1 {
-      font-size: 18px;
+      font-size: 15px;
       font-weight: 600;
       color: #1a1a1a;
+      text-align: center;
     }
-
+ 
     header p {
-      font-size: 13px;
+      font-size: 11px;
       color: #666;
-      margin-top: 2px;
+      margin-top: 1px;
     }
-
+ 
     #controls {
       background: #fff;
       border-bottom: 1px solid #e0e0e0;
-      padding: 12px 24px;
+      padding: 6px 20px;
       display: flex;
       align-items: center;
-      gap: 24px;
-      flex-wrap: wrap;
+      gap: 20px;
+      flex-wrap: nowrap;
+      flex-shrink: 0;
     }
-
+ 
     .control-group {
       display: flex;
       align-items: center;
@@ -41,18 +53,18 @@
       font-size: 13px;
       color: #555;
     }
-
+ 
     #year-slider {
       width: 200px;
       accent-color: #08519C;
     }
-
+ 
     #year-label {
       font-weight: 600;
       color: #08519C;
       min-width: 36px;
     }
-
+ 
     #play-btn {
       background: #08519C;
       color: #fff;
@@ -62,9 +74,9 @@
       font-size: 13px;
       cursor: pointer;
     }
-
+ 
     #play-btn:hover { background: #0c447c; }
-
+ 
     #continent-filter {
       border: 1px solid #ddd;
       border-radius: 4px;
@@ -73,81 +85,89 @@
       color: #333;
       cursor: pointer;
     }
-
+ 
     #maps-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      padding: 16px 24px;
+      gap: 10px;
+      padding: 10px 20px;
+      flex: 1;
+      min-height: 0;
     }
-
+ 
     .map-panel {
       background: #fff;
       border: 1px solid #e0e0e0;
       border-radius: 8px;
-      padding: 12px;
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
     }
-
+ 
     .map-panel h2 {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       color: #333;
-      margin-bottom: 8px;
-      padding-bottom: 6px;
+      margin-bottom: 4px;
+      padding-bottom: 4px;
       border-bottom: 1px solid #f0f0f0;
+      flex-shrink: 0;
     }
-
+ 
     .map-panel svg {
       width: 100%;
-      height: auto;
+      flex: 1;
+      min-height: 0;
       display: block;
     }
-
+ 
     .country {
       stroke: #fff;
       stroke-width: 0.4;
       cursor: pointer;
       transition: opacity 0.2s, stroke-width 0.15s;
     }
-
+ 
     /* Hover — slight dim */
     .country:hover { opacity: 0.8; stroke: #555; stroke-width: 1; }
-
+ 
     /* Click selected — bold dark outline on BOTH maps */
     .country.country-selected {
       stroke: #1a1a1a !important;
       stroke-width: 2.5 !important;
       opacity: 1 !important;
     }
-
+ 
     /* All non-selected countries fade out */
     .country.country-faded { opacity: 0.12 !important; }
-
+ 
     .country.faded { opacity: 0.15; }
-
+ 
     #legend {
       background: #fff;
       border-top: 1px solid #e0e0e0;
-      padding: 12px 24px;
+      padding: 6px 20px;
       display: flex;
       align-items: center;
-      gap: 32px;
-      flex-wrap: wrap;
+      gap: 20px;
+      flex-wrap: nowrap;
+      flex-shrink: 0;
     }
-
+ 
     .legend-title {
       font-size: 12px;
       font-weight: 600;
       color: #555;
       margin-right: 4px;
     }
-
+ 
     .legend-buckets {
       display: flex;
       align-items: center;
       gap: 4px;
     }
-
+ 
     .legend-bucket {
       display: flex;
       align-items: center;
@@ -160,17 +180,17 @@
       border: 1.5px solid transparent;
       transition: border-color 0.15s;
     }
-
+ 
     .legend-bucket:hover { border-color: #aaa; }
     .legend-bucket.active { border-color: #333; }
-
+ 
     .legend-swatch {
       width: 14px;
       height: 14px;
       border-radius: 2px;
       flex-shrink: 0;
     }
-
+ 
     #tooltip {
       position: fixed;
       background: #fff;
@@ -182,17 +202,16 @@
       display: none;
       z-index: 1000;
       box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-      max-width: 280px;
-      min-width: 260px;
+      width: 260px;
     }
-
+ 
     #tooltip .tt-country {
       font-size: 13px;
       font-weight: 600;
       margin-bottom: 6px;
       color: #1a1a1a;
     }
-
+ 
     #tooltip .tt-row {
       display: flex;
       justify-content: space-between;
@@ -200,31 +219,32 @@
       margin: 3px 0;
       color: #444;
     }
-
+ 
     #tooltip .tt-label { color: #888; }
     #tooltip .tt-val   { font-weight: 500; }
     #tooltip .tt-gap   { color: #D55E00; font-weight: 600; }
-
+ 
     #tooltip .tt-spark {
       margin-top: 8px;
       padding-top: 8px;
       border-top: 1px solid #f0f0f0;
     }
-
+ 
     #tooltip .tt-spark-label {
       font-size: 10px;
       color: #aaa;
       margin-bottom: 4px;
     }
-
+ 
     #stats {
       background: #fff;
       border-top: 1px solid #e0e0e0;
-      padding: 10px 24px;
+      padding: 5px 20px;
       display: flex;
-      gap: 32px;
-      font-size: 12px;
+      gap: 24px;
+      font-size: 11px;
       color: #666;
+      flex-shrink: 0;
     }
-
-#stats span b { color: #08519C; }
+ 
+    #stats span b { color: #08519C; }

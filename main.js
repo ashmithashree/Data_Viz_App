@@ -49,8 +49,9 @@ let currentYear    = 1999;
 let playing        = false;
 let playTimer      = null;
 let activeContinent = 'all';
+let selectedCountryId = null;
 let activeBucket   = null;
-let selectedCountryId = null; 
+
 // Pre-built lookup: year → { alpha3 → record }
 const dataIndex = {};
 
@@ -107,20 +108,18 @@ function drawMaps() {
       .join('path')
         .attr('class','country')
         .attr('d', path)
+
+        // HOVER — shows tooltip only
         .on('mouseover', function(event, d) {
           const a3  = NUM_TO_A3[String(d.id)];
           const rec = a3 ? getRecord(a3, currentYear) : null;
           showTooltip(event, a3, rec);
-          // Highlight on both maps
-          d3.selectAll('.country').each(function(cd) {
-            d3.select(this).classed('highlighted', cd.id === d.id);
-          });
         })
         .on('mousemove', moveTooltip)
         .on('mouseout', function() {
           hideTooltip();
-          d3.selectAll('.country').classed('highlighted', false);
         })
+
         // CLICK — locks focus on this country across BOTH maps
         // Click same country again to deselect and reset
         .on('click', function(event, d) {
@@ -137,6 +136,7 @@ function drawMaps() {
               .classed('country-faded',    cd => cd.id !== d.id);
           }
         });
+
     updateMapColors(svgId, field);
   });
 }
@@ -247,10 +247,26 @@ function showTooltip(event, a3, rec) {
 }
 
 function moveTooltip(event) {
-  const x = event.clientX + 14;
-  const y = event.clientY - 10;
-  tooltip.style.left = Math.min(x, window.innerWidth  - 240) + 'px';
-  tooltip.style.top  = Math.min(y, window.innerHeight - 280) + 'px';
+  const TT_W  = 274;  // tooltip width + padding
+  const TT_H  = 300;  // tooltip approximate height
+  const GAP   = 14;   // gap between cursor and tooltip
+  const mx    = event.clientX;
+  const my    = event.clientY;
+  const vw    = window.innerWidth;
+  const vh    = window.innerHeight;
+
+  // Flip left if tooltip would overflow right edge
+  const left = (mx + GAP + TT_W > vw)
+    ? mx - TT_W - GAP          // show to the LEFT of cursor
+    : mx + GAP;                 // show to the RIGHT of cursor
+
+  // Flip up if tooltip would overflow bottom edge
+  const top = (my + GAP + TT_H > vh)
+    ? my - TT_H                 // show ABOVE cursor
+    : my + GAP;                 // show BELOW cursor
+
+  tooltip.style.left = Math.max(4, left) + 'px';
+  tooltip.style.top  = Math.max(4, top)  + 'px';
 }
 
 function hideTooltip() {
