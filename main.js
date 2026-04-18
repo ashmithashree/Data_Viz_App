@@ -5,7 +5,7 @@ const BUCKETS = [
   { label: '80–90%', min: 80,  max: 90,  color: '#6BAED6' },
   { label: '70–80%', min: 70,  max: 80,  color: '#9ECAE1' },
   { label: '60–70%', min: 60,  max: 70,  color: '#C6DBEF' },
-  { label: '<60%',   min: 0,   max: 60,  color: '#D55E00' },
+  { label: '<60%',   min: 0,   max: 60,  color: '#7F3B08' },
 ];
 
 // Alpha-3 → ISO numeric
