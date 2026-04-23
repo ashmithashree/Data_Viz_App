@@ -19,6 +19,10 @@
 //     for Design. Morgan Kaufmann.
 //   Shneiderman, B. (1996). The Eyes Have It. IEEE Symposium
 //     on Visual Languages, pp. 336-343.
+// Code D3 visulization Reference:
+//    Hall, T. & Nair, P. (2018). Learning D3.js 5 Mapping. 
+// Packt Publishing. Chapter 5: Tooltips with Visualizations.
+
 // ============================================================
  
 // ---------------------colour configurtion------------------
@@ -147,6 +151,7 @@ function drawMaps() {
 
         // HOVER — shows tooltip only
         // Follows Shneiderman (1996) detail-on-demand principle
+        //Reference: https://d3-graph-gallery.com/graph/choropleth_hover_effect.html
         .on('mouseover', function(event, d) {
           const a3  = NUM_TO_A3[String(d.id)];
           const rec = a3 ? getRecord(a3, currentYear) : null;
@@ -282,6 +287,7 @@ function showTooltip(event, a3, rec) {
   moveTooltip(event);
 }
 //flips left or upward when the tooltip would overflow the screen edge. found while testing
+//Reference: https://observablehq.com/@d3/tooltip
 function moveTooltip(event) {
   const TT_W  = 274;  
   const TT_H  = 300; 
@@ -310,7 +316,8 @@ function hideTooltip() {
 }
 //Builds an inline SVG sparkline showing the attrition gap
 // Uses D3 scales and path generators to produce SVG
-// Reference: D3 line and area generators (Bostock, 2011)
+// Reference: D3 line and area generators https://d3-graph-gallery.com/graph/line_smallmultiple.html
+
 function buildSparkline(a3) {
   const sparkData = allData
     .filter(r => r.id === a3 && r.gap != null)
