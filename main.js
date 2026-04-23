@@ -1,4 +1,33 @@
-// ── set colour────────────────────────────────────────────────────────────────────
+// Libraries used:
+//   D3.js v7        — https://d3js.org
+//                     Bostock, M. et al. (2011). D3: Data-Driven
+//                     Documents. IEEE Trans. Visualization &
+//                     Computer Graphics, 17(12), 2301-2309.
+//   TopoJSON v3     — https://github.com/topojson/topojson
+//   world-atlas v2  — https://github.com/topojson/world-atlas
+//                     Provides countries-110m.json TopoJSON file
+//
+// Colour palette:
+//   Sequential blue scale — ColorBrewer (Brewer, C.A., 1994)
+//   Alert vermillion #D55E00 — Okabe-Ito CUD palette
+//   Okabe, M. & Ito, K. (2008). Color Universal Design.
+//   https://jfly.uni-koeln.de/color/
+//
+// Design references:
+//   Munzner, T. (2014). Visualization Analysis and Design.
+//   Ware, C. (2004). Information Visualization: Perception
+//     for Design. Morgan Kaufmann.
+//   Shneiderman, B. (1996). The Eyes Have It. IEEE Symposium
+//     on Visual Languages, pp. 336-343.
+// ============================================================
+ 
+// ---------------------colour configurtion------------------
+// Six sequential buckets from dark blue (high) to light blue,
+// plus Okabe-Ito Vermillion for the <60% alert bucket.
+// Brewer (1994) recommends sequential luminance scales for
+// ordered area data. Six buckets chosen to reduce cognitive
+// load — viewers judge a category rather than interpolating
+// an exact shade (Ware, 2004).
 const BUCKETS = [
   { label: '>95%',   min: 95,  max: 200, color: '#08519C' },
   { label: '90–95%', min: 90,  max: 95,  color: '#3182BD' },
@@ -8,7 +37,13 @@ const BUCKETS = [
   { label: '<60%',   min: 0,   max: 60,  color: '#F05039' },
 ];
 
-// Alpha-3 → ISO numeric
+// -------------------Alpha-3 → ISO -----------------------------
+
+// TopoJSON countries-110m.json uses ISO 3166-1 numeric IDs
+// Our data.json uses alpha-3 codes
+// This lookup table bridges the two formats.
+// Source: ISO 3166-1 standard country codes https://www.iso.org/iso-3166-country-codes.html
+
 const A3_TO_NUM = {
   AFG:4,ALB:8,DZA:12,AGO:24,ARG:32,ARM:51,AUS:36,AZE:31,BGD:50,
   BLR:112,BEN:204,BTN:64,BOL:68,BIH:70,BWA:72,BRA:76,BFA:854,BDI:108,
@@ -33,15 +68,15 @@ const A3_TO_NUM = {
   COM:174,MDV:462,TLS:626,STP:678,WSM:882,TON:776,VUT:548,KIR:296,
   MHL:584,FSM:583,PLW:585,NRU:520,TUV:798,COK:184,NIU:570,
 };
-
+// Build reverse lookup: ISO numeric string → alpha-3 code used in mouseover
 const NUM_TO_A3 = {};
 Object.entries(A3_TO_NUM).forEach(([a3, num]) => {
   NUM_TO_A3[String(num)] = a3;
 });
-
+// set dimention for map svg
 const W = 800, H = 400;
 
-// ── initilise─────────────────────────────────────────────────────────────────────
+// ----initilise--------------------------
 let allData        = [];
 let worldTopo      = null;
 let currentYear    = 1999;
@@ -60,35 +95,36 @@ function buildIndex(data) {
     dataIndex[r.year][r.id] = r;
   });
 }
-
+// Retrieve one data record by country code and year
 function getRecord(alpha3, year) {
   return (dataIndex[year] || {})[alpha3] || null;
 }
 
-// ── colour────────────────────────────────────────────────────────────────────
+// -----------------colour function------------------
 function colorFor(val) {
   if (val == null || isNaN(val)) return null;
   const b = BUCKETS.find(b => val >= b.min && val < b.max);
   return b ? b.color : null;
 }
-
+// Return the full bucket object for a value used in legend
 function bucketFor(val) {
   if (val == null || isNaN(val)) return null;
   return BUCKETS.find(b => val >= b.min && val < b.max) || null;
 }
 
-// ── map map ────────────────────────────────────────────────────────────
+// ------ map map--------------
+// Reference: D3 general update pattern (Bostock, 2011)
 function drawMaps() {
   const features = topojson.feature(worldTopo, worldTopo.objects.countries).features;
 
   ['enrollment','completion'].forEach(field => {
     const svgId  = field === 'enrollment' ? 'svg-enrollment' : 'svg-completion';
     const svg    = d3.select('#' + svgId);
-
+ // Natural Earth projection  (Munzner, 2014)
     const proj = d3.geoNaturalEarth1().scale(140).translate([W/2, H/2 + 15]);
     const path = d3.geoPath().projection(proj);
 
-    // Hatch pattern
+    // Hatch pattern accessibility testing (Brewer, 1994).
     let defs = svg.select('defs');
     if (defs.empty()) defs = svg.append('defs');
     if (defs.select('#hatch-' + field).empty()) {
@@ -101,7 +137,8 @@ function drawMaps() {
       pat.append('line').attr('x1',0).attr('y1',0).attr('x2',0).attr('y2',5)
         .attr('stroke','#BDBDBD').attr('stroke-width',1);
     }
-
+// Bind TopoJSON features to SVG paths using numeric ID
+    // as the key function for stable data joins
     svg.selectAll('.country')
       .data(features, d => d.id)
       .join('path')
@@ -109,6 +146,7 @@ function drawMaps() {
         .attr('d', path)
 
         // HOVER — shows tooltip only
+        // Follows Shneiderman (1996) detail-on-demand principle
         .on('mouseover', function(event, d) {
           const a3  = NUM_TO_A3[String(d.id)];
           const rec = a3 ? getRecord(a3, currentYear) : null;
@@ -138,28 +176,28 @@ function drawMaps() {
     updateMapColors(svgId, field);
   });
 }
-
+// Update fill colour and opacity for all country paths in one map.
 function updateMapColors(svgId, field) {
   const svg = d3.select('#' + svgId);
   svg.selectAll('.country').each(function(d) {
     const a3  = NUM_TO_A3[String(d.id)];
     const rec = a3 ? getRecord(a3, currentYear) : null;
-
+// Default: hatch pattern for countries with no data
     let fill   = 'url(#hatch-' + field + ')';
     let opacity = 1;
-
+// Apply bucket colour if data exists for this country/year
     if (rec && rec[field] != null) {
       fill = colorFor(rec[field]) || fill;
     }
 
-    // Continent filter
+     // Continent filter — fade non-matching countries
     if (activeContinent !== 'all') {
       if (!rec || rec.continent !== activeContinent) {
         opacity = 0.1;
       }
     }
 
-    // Bucket filter
+    // Bucket filter — fade non-matching countries
     if (activeBucket !== null) {
       const b = rec ? bucketFor(rec[field]) : null;
       if (!b || b.label !== BUCKETS[activeBucket].label) {
@@ -172,13 +210,13 @@ function updateMapColors(svgId, field) {
       .attr('opacity', opacity);
   });
 }
-
+// Convenience wrapper — updates both maps in one call
 function updateBothColors() {
   updateMapColors('svg-enrollment', 'enrollment');
   updateMapColors('svg-completion', 'completion');
 }
 
-// ── update year ───────────────────────────────────────────────────────────────
+// --------update year ------------------
 function update(year) {
   currentYear = +year;
   document.getElementById('year-label').textContent = currentYear;
@@ -187,7 +225,7 @@ function update(year) {
   updateStats();
 }
 
-// ── statics─────────────────────────────────────────────────────────────────────
+// ----- statics----------------
 function updateStats() {
   const yearRecs = Object.values(dataIndex[currentYear] || {});
   const visible  = activeContinent === 'all'
@@ -204,7 +242,7 @@ function updateStats() {
     valid.length ? d3.mean(valid, r => r.gap).toFixed(1) + ' pts' : '—';
 }
 
-// ── tooltip ───────────────────────────────────────────────────────────────────
+// ---tooltip ----------------
 const tooltip = document.getElementById('tooltip');
 
 function showTooltip(event, a3, rec) {
@@ -243,7 +281,7 @@ function showTooltip(event, a3, rec) {
   tooltip.style.display = 'block';
   moveTooltip(event);
 }
-
+//flips left or upward when the tooltip would overflow the screen edge. found while testing
 function moveTooltip(event) {
   const TT_W  = 274;  
   const TT_H  = 300; 
@@ -270,13 +308,15 @@ function moveTooltip(event) {
 function hideTooltip() {
   tooltip.style.display = 'none';
 }
-
+//Builds an inline SVG sparkline showing the attrition gap
+// Uses D3 scales and path generators to produce SVG
+// Reference: D3 line and area generators (Bostock, 2011)
 function buildSparkline(a3) {
   const sparkData = allData
     .filter(r => r.id === a3 && r.gap != null)
     .sort((a, b) => a.year - b.year);
   if (sparkData.length < 2) return '';
-
+//dimentions
   const ml = 32, mr = 12, mt = 8, mb = 24;
   const sw = 220, sh = 90;
   const iw = sw - ml - mr;
@@ -285,7 +325,7 @@ function buildSparkline(a3) {
   const minYear = d3.min(sparkData, d => d.year);
   const maxYear = d3.max(sparkData, d => d.year);
   const maxGap  = Math.min(60, Math.ceil(d3.max(sparkData, d => d.gap) / 10) * 10 + 5);
-
+// D3 linear scales mapping data pixel coordinates
   const xS = d3.scaleLinear().domain([minYear, maxYear]).range([0, iw]);
   const yS = d3.scaleLinear().domain([0, maxGap]).range([ih, 0]);
 
@@ -295,7 +335,7 @@ function buildSparkline(a3) {
     .y(d => yS(d.gap))
     .curve(d3.curveMonotoneX);
 
-  // Area fill path
+  // D3 area generator for shaded fill below the line
   const areaFn = d3.area()
     .x(d => xS(d.year))
     .y0(ih)
@@ -312,7 +352,7 @@ function buildSparkline(a3) {
   // X axis ticks 
   const midYear = Math.round((minYear + maxYear) / 2);
   const xTicks  = [minYear, midYear, maxYear];
-
+// Blue vertical dashed line + dot at current year position
   let currentMarker = '';
   if (currRec) {
     const cx = xS(currRec.year);
@@ -325,7 +365,7 @@ function buildSparkline(a3) {
         ${currRec.gap}pts
       </text>`;
   }
-
+// Vermillion dot at the most recent data point
   const endCircle = `
     <circle cx="${xS(lastRec.year)}" cy="${yS(lastRec.gap)}"
       r="3.5" fill="#D55E00" stroke="#fff" stroke-width="1.5"/>`;
@@ -344,7 +384,7 @@ function buildSparkline(a3) {
     `<text x="${xS(y)}" y="${ih + 14}" font-size="8.5" fill="#aaa"
        text-anchor="middle">${y}</text>`
   ).join('');
-
+  // Return complete SVG string with gradient area, line, markers
   return `
   <svg width="${sw}" height="${sh}"
        style="display:block;overflow:visible;margin-top:4px">
@@ -375,7 +415,7 @@ function buildSparkline(a3) {
   </svg>`;
 }
 
-// ── filter ────────────────────────────────────────────────────────────────────
+//-----rate legend ------------------------
 function buildLegend() {
   const container = document.getElementById('legend-buckets');
   container.innerHTML = '';
@@ -414,7 +454,10 @@ function stopPlay() {
   document.getElementById('play-btn').innerHTML = '&#9654; Play';
 }
 
-// ── init ──────────────────────────────────────────────────────────────────────
+// Load both data files in parallel using Promise.all,
+// then initialise all components.
+// Data sources: data/data.json & world-atlas countries  — TopoJSON world boundaries (Bostock, world-atlas v2, MIT License)
+//https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json
 Promise.all([
   d3.json('data/data.json'),
   d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
@@ -446,7 +489,5 @@ Promise.all([
   console.error('Error loading data:', err);
   document.body.innerHTML += `<div style="color:red;padding:20px;font-family:sans-serif">
     <b>Error:</b> ${err.message}<br><br>
-    Make sure you are running from WebStorm's built-in server (not file://)
-    and that <code>data/data.json</code> exists.
   </div>`;
 });
