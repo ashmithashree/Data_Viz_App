@@ -7,12 +7,12 @@
  <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
-
+<! -- Question Displayed Header -->
 <header>
   <h1>Primary Enrollment vs Completion Rate — Wealth and Education Gap</h1>
   <p>How does national wealth influence the gap between primary enrollment and completion rates in developing countries? | 1999–2023</p>
 </header>
-
+<! -- Year slider with play button with continent legend -->
 <div id="controls">
   <div class="control-group">
     <label for="year-slider">Year:</label>
@@ -33,7 +33,7 @@
     </select>
   </div>
 </div>
-
+<! -- SVG for enrollment and completion-->
 <div id="maps-container">
   <div class="map-panel" id="panel-enrollment">
     <h2>Enrollment Rate (%)</h2>
@@ -44,7 +44,7 @@
     <svg id="svg-completion" viewBox="0 0 800 420"></svg>
   </div>
 </div>
-
+<! --Rate legend with colour codes-->
 <div id="legend">
   <div style="display:flex;align-items:center;gap:8px">
     <span class="legend-title">Rate (%):</span>
@@ -57,13 +57,14 @@
     No data
   </div>
 </div>
-
+<! Statistics on the given data -->
 <div id="stats">
   <span>Countries shown: <b id="stat-countries">—</b></span>
   <span>Avg enrollment: <b id="stat-enrol">—</b></span>
   <span>Avg completion: <b id="stat-comp">—</b></span>
   <span>Avg gap: <b id="stat-gap">—</b></span>
 </div>
+<! Data Sourses and data processing information -->
 <div id="data-info">
   <strong>Data Processing &amp; Sources</strong>
   <button id="info-toggle" onclick="
@@ -84,9 +85,9 @@
       <strong> Processing steps applied:</strong> <a href="https://github.com/ashmithashree/Data_Viz_App/blob/main/data/data_processing.py" target="_blank">code link</a>
       <ol style="margin:4px 0 8px 16px; padding:0; list-style:decimal; font-size:11px; color:#555; line-height:1.8;">
         <li>Continent labels mapped from GDL dataset before merging; ISO 3166 regional classifications applied for 74 countries absent from GDL</li>
-        <li>56 World Bank regional aggregate codes excluded (SSA, WLD, HIC etc.) — not mappable to geographic boundaries</li>
+        <li>56 World Bank regional aggregate codes excluded (SSA, WLD, HIC etc.) not mappable to geographic boundaries</li>
         <li>GDL sub-national rows deduplicated to national level, preventing duplicate country-year records</li>
-        <li>Left join on ISO country code and year — preserves all education records even where no IWI match exists</li>
+        <li>Left join on ISO country code and year preserves all education records even where no IWI match exists</li>
         <li>Missing enrollment, completion, and IWI values forward-filled within each country's time series</li>
         <li>Gross enrollment ratios exceeding 100% capped at 100% to correct for over-age student counting (UNESCO methodology)</li>
         <li>Attrition gap computed as Enrollment − Completion, directly operationalising the research question</li>
