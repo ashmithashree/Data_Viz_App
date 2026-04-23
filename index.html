@@ -81,16 +81,18 @@
       Global Data Lab — International Wealth Index (IWI)</a> — Household wealth scores (0–100), 133 countries, 1992–2023.
     </p>
     <p style="margin-top:5px">
-      <strong>Processing steps applied:</strong>
-      (1) Continent labels were mapped from the GDL dataset to education records before merging, ensuring all countries retain their region regardless of IWI data availability.
-      (2) 56 World Bank regional aggregate codes (e.g. SSA, WLD, HIC) were excluded as they represent country-group averages not mappable to geographic boundaries.
-      (3) GDL sub-national rows were deduplicated to national level only, preventing duplicate country-year records.
-      (4) A left join on ISO country code and year preserved all education records even where no IWI match exists.
-      (5) Missing enrollment, completion, and IWI values were forward-filled within each country's time series following standard practice for temporal data gaps.
-      (6) Gross enrollment ratios exceeding 100% were capped at 100% to correct for over-age student counting in UNESCO methodology.
-      (7) The attrition gap was computed as Enrollment − Completion, directly operationalising the research question.
-      (8) Rows with negative gaps (measurement artefacts) and null enrollment were removed.
-    </p>
+      <strong> Processing steps applied:</strong> <a href="https://github.com/ashmithashree/Data_Viz_App/blob/main/data/data_processing.py" target="_blank">code link</a>
+      <ol style="margin:4px 0 8px 16px; padding:0; list-style:decimal; font-size:11px; color:#555; line-height:1.8;">
+        <li>Continent labels mapped from GDL dataset before merging; ISO 3166 regional classifications applied for 74 countries absent from GDL</li>
+        <li>56 World Bank regional aggregate codes excluded (SSA, WLD, HIC etc.) — not mappable to geographic boundaries</li>
+        <li>GDL sub-national rows deduplicated to national level, preventing duplicate country-year records</li>
+        <li>Left join on ISO country code and year — preserves all education records even where no IWI match exists</li>
+        <li>Missing enrollment, completion, and IWI values forward-filled within each country's time series</li>
+        <li>Gross enrollment ratios exceeding 100% capped at 100% to correct for over-age student counting (UNESCO methodology)</li>
+        <li>Attrition gap computed as Enrollment − Completion, directly operationalising the research question</li>
+        <li>Rows with negative gaps (measurement artefacts) and null enrollment removed</li>
+      </ol>
+     
     </p>
     <p style="margin-top:5px">
       All displayed values trace directly to the original source datasets — no values were fabricated or imputed.
